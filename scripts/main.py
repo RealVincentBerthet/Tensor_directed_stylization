@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 # Read image
-img = cv.imread('lena.png',cv.IMREAD_COLOR)
+img = cv.imread('./../sources/lena.png',cv.IMREAD_COLOR)
 img_ycrcb = cv.cvtColor(img, cv.COLOR_BGR2YCrCb)
 img_y = img_ycrcb[:,:,0]
 
@@ -13,6 +13,7 @@ img_y = img_ycrcb[:,:,0]
 # Gradient
 sobelx = cv.Sobel(img, cv.CV_64F, 1, 0, ksize=1)
 
-cv.imshow('image',sobelx)
+cv.imshow('sobelx',sobelx)
+cv.imwrite("../output/sobelx.jpg", sobelx)
 cv.waitKey(0)
 cv.destroyAllWindows()
