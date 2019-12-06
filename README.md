@@ -2,8 +2,11 @@
 
 ## Naive approach
 
-1. 
-
 ## Tensor
 
 ## Colorization
+
+## TODO
+* Nouvelles colorization
+* artefact trace transparent
+* approche non naive :O
