@@ -21,18 +21,19 @@ random=1000000              # set random to -1 to cross all the image
 
 # Read image
 img = cv.imread('./sources/lena.png',cv.IMREAD_COLOR)
+#img = cv.imread('./sources/perso/guigui.jpg',cv.IMREAD_COLOR)
 img_ycrcb = cv.cvtColor(img, cv.COLOR_BGR2YCrCb)
 img_y = img_ycrcb[:,:,0]
 
 # Gaussian filter
 gaussian = cv.GaussianBlur(img_y,(5,5),sigma_gaussian)
-cv.imwrite("./output/gaussian_s_"+str(sigma_gaussian)+".jpg", gaussian)
+cv.imwrite('./output/img_gaussian.jpg', gaussian)
 
 # Gradient
 sobel = cv.Sobel(gaussian, cv.CV_64F, 1, 1, ksize=1)
 sobelx = cv.Sobel(gaussian, cv.CV_64F, 1, 0, ksize=1)
 sobely = cv.Sobel(gaussian, cv.CV_64F, 0, 1, ksize=1)
-cv.imwrite("./output/sobel_s_"+str(sigma_gaussian)+".jpg", sobel)
+cv.imwrite('./output/img_sobel.jpg', sobel)
 
 # Initialize img_greyscale image
 height, width = sobel.shape
@@ -56,7 +57,8 @@ else :
         for y in range(sobel.shape[1]):
             cpt,img_greyscale=strokes(x,y,cpt,img_greyscale)
             print('strokes : '+str(cpt)+'/'+str(sobel.shape[0]*sobel.shape[1]))
-cv.imwrite("./output/res_greyscale_s_"+str(sigma_gaussian)+"_l_"+str(L)+"_e_"+str(epsilon)+".jpg", img_greyscale)
+
+cv.imwrite('./output/img_grayscale.jpg', img_greyscale)
 
 
 # Colorisation
