@@ -8,7 +8,7 @@ def strokes(x,y,cpt,result) :
     if sobel[x,y]>epsilon:
         uv = [L/2 *sobely[x,y]/sobel[x,y], L/2 *-sobelx[x,y]/sobel[x,y]]
         cv.line(tmp, (y - int(uv[0]), x - int(uv[1])), (y + int(uv[0]), x + int(uv[1])), 10, 1)
-        result-=tmp
+        result[:,:] = cv.subtract(result[:,:], tmp[:,:])
         cpt+=1
     return cpt,result
 
