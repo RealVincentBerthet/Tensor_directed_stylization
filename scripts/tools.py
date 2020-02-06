@@ -2,6 +2,10 @@ import numpy as np
 import cv2 as cv
 import numpy as np
 
+class Tensor:
+    def __init__(self, tensor):
+        self.tensor = tensor
+
 class Eigen:
     def __init__(self,eigen):
         self.eigen = eigen
@@ -26,24 +30,33 @@ class Eigen:
 
 def draw_ellipses(img, eigen):
 
-    # lambda_plus=
-    # lambda_moins=
-    # theta_plus=
-    # theta_moins=
     #Discretiser l'image et tracer des ellipse
     step=20
     img_ellipse=img
 
-    lambda_plus_normalized=cv.normalize(lambda_plus, None, 0,10, norm_type=cv.NORM_MINMAX)
-    lambda_moins_normalized=cv.normalize(lambda_moins, None, 0,10, norm_type=cv.NORM_MINMAX)
+    lambda_plus_matrix = np.zeros(eigen.shape)
+    lambda_moins_matrix = np.zeros(eigen.shape)
+    for i in range(eigen.shape[0]):
+        for j in range(eigen.shape[1]):
+            lambda_plus_matrix[i][j] = eigen[i][j].getLambdaPlus()
+            lambda_moins_matrix[i][j] = eigen[i][j].getLambdaMoins()
+
+    lambda_plus_normalized=cv.normalize(lambda_plus_matrix, None, 0,10, norm_type=cv.NORM_MINMAX)
+    lambda_moins_normalized=cv.normalize(lambda_moins_matrix, None, 0,10, norm_type=cv.NORM_MINMAX)
+
 
     for i in range(0,img_ellipse.shape[0],step) :
         for j in range(0,img_ellipse.shape[1],step) :
-            axeLength = (3*lambda_moins_normalized[i,j].astype(int),3*lambda_plus_normalized[i,j].astype(int))
+
+            lambda_plus = 3 * lambda_plus_normalized[i][j].astype(int)
+            lambda_moins = 3 * lambda_moins_normalized[i][j].astype(int)
+            theta_plus = eigen[i][j].getThetaPlus()
+            theta_moins = eigen[i][j].getThetaMoins()
+
+            axeLength = (lambda_moins,lambda_plus)
             # print(axeLength)
             center=(i,j)
 
-            # axeLength = (3,3)
             vect = theta_plus
             angle = np.rad2deg(np.arccos(np.clip(np.dot(np.array([0, 1]), vect / np.linalg.norm(vect)), -1.0, 1.0)))
 
