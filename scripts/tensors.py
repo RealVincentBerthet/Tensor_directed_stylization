@@ -9,16 +9,27 @@ def initialization(img,sigma1, sigma2):
 
     img = cv.GaussianBlur(img,(15,15),sigma1)
 
+    # # Estimate the smoothed structure tensor field
+    # # sobel x
+    # img_sobel_x=cv.Sobel(img,cv.CV_64F,1,0,ksize=1)
+    # cv.imwrite('./output/tensors/img_sobel_x.jpg', img_sobel_x)
+    # # sobel y
+    # img_sobel_y=cv.Sobel(img,cv.CV_64F,0,1,ksize=1)
+    # cv.imwrite('./output/tensors/img_sobel_y.jpg', img_sobel_y)
+    # # BGR->LAB conversion
+    # img_sobel_x_lab = cv.cvtColor(np.uint8(img_sobel_x), cv.COLOR_BGR2LAB)
+    # img_sobel_y_lab = cv.cvtColor(np.uint8(img_sobel_y), cv.COLOR_BGR2LAB)
+
+    img_lab = cv.cvtColor(np.uint8(img), cv.COLOR_BGR2LAB)
     # Estimate the smoothed structure tensor field
     # sobel x
-    img_sobel_x=cv.Sobel(img,cv.CV_64F,1,0,ksize=1) 
-    cv.imwrite('./output/tensors/img_sobel_x.jpg', img_sobel_x)
+    img_sobel_x_lab = cv.Sobel(img_lab, cv.CV_64F, 1, 0, ksize=1)
+    cv.imwrite('./output/tensors/img_sobel_x.jpg', img_sobel_x_lab)
     # sobel y
-    img_sobel_y=cv.Sobel(img,cv.CV_64F,0,1,ksize=1) 
-    cv.imwrite('./output/tensors/img_sobel_y.jpg', img_sobel_y)
+    img_sobel_y_lab = cv.Sobel(img_lab, cv.CV_64F, 0, 1, ksize=1)
+    cv.imwrite('./output/tensors/img_sobel_y.jpg', img_sobel_y_lab)
     # BGR->LAB conversion
-    img_sobel_x_lab = cv.cvtColor(np.uint8(img_sobel_x), cv.COLOR_BGR2LAB)
-    img_sobel_y_lab = cv.cvtColor(np.uint8(img_sobel_y), cv.COLOR_BGR2LAB)
+
 
     # compute eigens 
     A=img_sobel_x_lab[:,:,0]*img_sobel_x_lab[:,:,0]+img_sobel_x_lab[:,:,1]*img_sobel_x_lab[:,:,1]+img_sobel_x_lab[:,:,2]*img_sobel_x_lab[:,:,2]
@@ -69,7 +80,8 @@ def main():
     # Algo
     A,B,C=initialization(img,sigma1,sigma2)
     G,T=computeTensors(A,B,C,p1,p2) # T (tensor de trait), G (tensor de structure)
-    tools.draw_ellipses(img, G)
+    # tools.draw_ellipses(img, G)
+    tools.draw_ellipses(img, T)
 
     print('time : '+str(round(time.time() - start_time))+' seconds')
 

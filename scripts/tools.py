@@ -5,8 +5,24 @@ import math
 
 
 class Tensor:
-    def __init__(self, tensor):
+    def __init__(self, tensor, c_plus, c_moins, thetaPlus, thetaMoins):
         self.tensor = tensor
+        self.c_plus = c_plus
+        self.c_moins = c_moins
+        self.thetaPlus = thetaPlus
+        self.thetaMoins = thetaMoins
+
+        def getThetaPlus(self):
+            return self.thetaPlus
+
+        def getThetaMoins(self):
+            return self.thetaMoins
+
+        def getCPlus(self):
+            return self.c_plus
+
+        def getCMoins(self):
+            return self.c_moins
 
 
 class Eigen:
@@ -45,7 +61,7 @@ class Eigen:
         T = self.getCPlus() * np.array([self.getThetaPlus()]).T @ np.array(
             [self.getThetaPlus()]) + self.getCMoins() * np.array([self.getThetaMoins()]).T @ np.array(
             [self.getThetaMoins()])
-        return Tensor(T)
+        return Tensor(T,self.getCPlus(),self.getCMoins(),self.getThetaPlus(),self.getThetaMoins())
 
 def getAngle(a, b, c):
     ang = math.degrees(math.atan2(c[1] - b[1], c[0] - b[0]) - math.atan2(a[1] - b[1], a[0] - b[0]))
@@ -62,10 +78,10 @@ def draw_ellipses(img, eigen):
     lambda_moins_matrix = np.zeros(eigen.shape)
     for i in range(eigen.shape[0]):
         for j in range(eigen.shape[1]):
-            lambda_plus_matrix[i][j] = eigen[i][j].getLambdaPlus()
-            lambda_moins_matrix[i][j] = abs(eigen[i][j].getLambdaMoins())
-            # lambda_plus_matrix[i][j] = eigen[i][j].getCPlus()
-            # lambda_moins_matrix[i][j] = (eigen[i][j].getCMoins())
+            # lambda_plus_matrix[i][j] = eigen[i][j].getLambdaPlus()
+            # lambda_moins_matrix[i][j] = (eigen[i][j].getLambdaMoins())
+            lambda_plus_matrix[i][j] = eigen[i][j].getCPlus()
+            lambda_moins_matrix[i][j] = (eigen[i][j].getCMoins())
 
     lambda_plus_normalized=cv.normalize(lambda_plus_matrix, None, 0,10, norm_type=cv.NORM_MINMAX)
     lambda_moins_normalized=cv.normalize(lambda_moins_matrix, None, 0,10, norm_type=cv.NORM_MINMAX)
