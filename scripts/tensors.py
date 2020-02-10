@@ -71,8 +71,13 @@ def computeTensors(A,B,C,p1,p2):
 
 def computeVectorField(T):
     print("computeVectorField start")
-    w=np.array([np.zeros(T.shape,VectorField),np.zeros(T.shape,VectorField),np.zeros(T.shape,VectorField),np.zeros(T.shape,VectorField)])
-    phi=np.array([0,math.pi/4,math.pi/2,3*math.pi/4])
+
+    # phi=np.array([0,math.pi/4,math.pi/2,3*math.pi/4])
+    phi = np.array([0, math.pi / 2])
+    w = []
+    for i in range(len(phi)):
+        w.append(np.zeros(T.shape, VectorField))
+    w = np.array(w)
 
     for i in range(T.shape[0]) :
         for j in range (T.shape[1]) :
@@ -89,12 +94,18 @@ def main():
     sigma2 = 1.2
     p1=1.2 #p1>=p2>=0
     p2=0.5
-    n=1000000
-    epsilon=0.2
-    L=4
+    n=100000
+    epsilon=1
+    L=80
     # img = cv.imread('./sources/img_test.png',cv.IMREAD_COLOR) #bgr
     # img = cv.imread('./sources/joconde.png', cv.IMREAD_COLOR)  # bgr
-    img = cv.imread('./sources/lena.png', cv.IMREAD_COLOR)  # bgr
+    # img = cv.imread('./sources/lena.png', cv.IMREAD_COLOR)  # bgr
+    # img = cv.imread('./sources/montagne.jpg', cv.IMREAD_COLOR)
+    # img = cv.imread('./sources/pyramide.jpeg', cv.IMREAD_COLOR)
+    img = cv.imread('./sources/obama.jpg', cv.IMREAD_COLOR)
+    coeff = 2
+    size = (int(img.shape[1]/coeff), int(img.shape[0]/coeff))
+    img = cv.resize(img, size)
 
     # Algo
     A,B,C=initialization(img,sigma1,sigma2)
@@ -102,7 +113,7 @@ def main():
     tools.draw_ellipses_G(img, G)
     tools.draw_ellipses_T(img, T)
     w=computeVectorField(T)
-    tools.draw_strokes(w,G,n,epsilon,L)
+    tools.draw_strokes(img, w,G,n,epsilon,L)
     print('time : '+str(round(time.time() - start_time))+' seconds')
 
 if __name__ == '__main__':

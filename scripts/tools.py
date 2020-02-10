@@ -155,10 +155,10 @@ def draw_ellipses_T(img, eigen):
     cv.imwrite('./output/tensors/img_ellipse_T.jpg', img_ellipse_T)
 
 
-def draw_strokes(w,G,n,epsilon,L):
+def draw_strokes(img, w,G,n,epsilon,L):
     print("draw_strokes start")
-    img_strokes = np.zeros((w.shape[1],w.shape[2]), np.uint8)
-    img_strokes[:,:] = 255
+    img_strokes = np.zeros((w.shape[1],w.shape[2],3), np.uint8)
+    img_strokes[:,:,:] = 255
 
     for counter in range(n):
         x=np.random.randint(0,img_strokes.shape[0])
@@ -166,10 +166,14 @@ def draw_strokes(w,G,n,epsilon,L):
 
         if math.sqrt(G[x,y].getLambdaPlus()+G[x,y].getLambdaMoins()) > epsilon :
             for p in range(w.shape[0]) : #nb phy
-                tmp = np.zeros((img_strokes.shape[0],img_strokes.shape[1]), np.uint8)
+                tmp = np.zeros((img_strokes.shape[0],img_strokes.shape[1],3), np.uint8)
                 uv=[L*w[p,x,y].getX(),L*w[p,x,y].getY()]
-                cv.line(tmp, (y - int(uv[0]), x - int(uv[1])), (y + int(uv[0]), x + int(uv[1])), 10, 1)
-                img_strokes[:,:] = cv.subtract(img_strokes[:,:], tmp[:,:])
+                coeff = 25
+                b = int((255-img[x,y][0])/coeff)
+                g = int((255-img[x,y][1])/coeff)
+                r = int((255-img[x,y][2])/coeff)
+                cv.line(tmp, (y - int(uv[0]), x - int(uv[1])), (y + int(uv[0]), x + int(uv[1])), (b, g, r) , 1)
+                img_strokes[:,:,:] = cv.subtract(img_strokes[:,:,:], tmp[:,:,:])
         else :
             counter=counter-1
 
