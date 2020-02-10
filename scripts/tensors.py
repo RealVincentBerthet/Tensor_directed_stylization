@@ -1,9 +1,11 @@
 import cv2 as cv
 import numpy as np
 import time
+import math
 import tools
 from tools import Eigen
 from tools import Tensor
+from tools import VectorField
 
 def initialization(img,sigma1, sigma2):
 
@@ -48,6 +50,7 @@ def initialization(img,sigma1, sigma2):
     return A,B,C
 
 def computeTensors(A,B,C,p1,p2):
+    print("computeTensors start")
     eigen =np.zeros(A.shape,Eigen)
     T =np.zeros(A.shape,Tensor)
 
@@ -63,8 +66,21 @@ def computeTensors(A,B,C,p1,p2):
             # extract eigenValues and eigenVectors to compute tensor
             eigen[i,j]=Eigen(cv.eigen(tmp),p1,p2)
             T[i,j]=eigen[i,j].computeTensor()
-
+    print("computeTensors done")
     return eigen,T
+
+def computeVectorField(T):
+    print("computeVectorField start")
+    w=np.array([np.zeros(T.shape,VectorField),np.zeros(T.shape,VectorField),np.zeros(T.shape,VectorField),np.zeros(T.shape,VectorField)])
+    phi=np.array([0,math.pi/4,math.pi/2,3*math.pi/4])
+
+    for i in range(T.shape[0]) :
+        for j in range (T.shape[1]) :
+            for p in range(len(phi)) :
+                w[p,i,j]=VectorField(T[i,j],phi[p])
+
+    print("computeVectorField done")           
+    return w
 
 def main():
     # Parameters
@@ -73,6 +89,9 @@ def main():
     sigma2 = 1.2
     p1=1.2 #p1>=p2>=0
     p2=0.5
+    n=1000000
+    epsilon=0.2
+    L=4
     # img = cv.imread('./sources/img_test.png',cv.IMREAD_COLOR) #bgr
     # img = cv.imread('./sources/joconde.png', cv.IMREAD_COLOR)  # bgr
     img = cv.imread('./sources/lena.png', cv.IMREAD_COLOR)  # bgr
@@ -82,7 +101,8 @@ def main():
     G,T=computeTensors(A,B,C,p1,p2) # T (tensor de trait), G (tensor de structure)
     tools.draw_ellipses_G(img, G)
     tools.draw_ellipses_T(img, T)
-
+    w=computeVectorField(T)
+    tools.draw_strokes(w,G,n,epsilon,L)
     print('time : '+str(round(time.time() - start_time))+' seconds')
 
 if __name__ == '__main__':
