@@ -80,8 +80,8 @@ def main():
     # Algo
     A,B,C=initialization(img,sigma1,sigma2)
     G,T=computeTensors(A,B,C,p1,p2) # T (tensor de trait), G (tensor de structure)
-    # tools.draw_ellipses(img, G)
-    tools.draw_ellipses(img, T)
+    tools.draw_ellipses_G(img, G)
+    tools.draw_ellipses_T(img, T)
 
     print('time : '+str(round(time.time() - start_time))+' seconds')
 

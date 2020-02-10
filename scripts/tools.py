@@ -12,17 +12,17 @@ class Tensor:
         self.thetaPlus = thetaPlus
         self.thetaMoins = thetaMoins
 
-        def getThetaPlus(self):
-            return self.thetaPlus
+    def getThetaPlus(self):
+        return self.thetaPlus
 
-        def getThetaMoins(self):
-            return self.thetaMoins
+    def getThetaMoins(self):
+        return self.thetaMoins
 
-        def getCPlus(self):
-            return self.c_plus
+    def getCPlus(self):
+        return self.c_plus
 
-        def getCMoins(self):
-            return self.c_moins
+    def getCMoins(self):
+        return self.c_moins
 
 
 class Eigen:
@@ -85,9 +85,7 @@ def draw_ellipses(img, eigen):
 
     lambda_plus_normalized=cv.normalize(lambda_plus_matrix, None, 0,10, norm_type=cv.NORM_MINMAX)
     lambda_moins_normalized=cv.normalize(lambda_moins_matrix, None, 0,10, norm_type=cv.NORM_MINMAX)
-    # lambda_plus_normalized=10*lambda_plus_matrix/np.amax(lambda_plus_matrix)
-    # lambda_moins_normalized = 10*lambda_moins_matrix / np.amax(lambda_plus_matrix)
-    # print(np.amax(lambda_moins_matrix))
+
 
     for i in range(0,img_ellipse.shape[0],step) :
         for j in range(0,img_ellipse.shape[1],step) :
@@ -107,3 +105,77 @@ def draw_ellipses(img, eigen):
             cv.ellipse(img_ellipse,center,axeLength,angle,0,360,(255,0,0),-1)
 
     cv.imwrite('./output/tensors/img_ellipse.jpg', img_ellipse)
+
+
+def draw_ellipses_G(img, eigen):
+
+    #Discretiser l'image et tracer des ellipses
+    step=20
+    img_ellipse=img.copy()
+    print(img.shape)
+    lambda_plus_matrix = np.zeros(eigen.shape)
+    lambda_moins_matrix = np.zeros(eigen.shape)
+    for i in range(eigen.shape[0]):
+        for j in range(eigen.shape[1]):
+            lambda_plus_matrix[i][j] = eigen[i][j].getLambdaPlus()
+            lambda_moins_matrix[i][j] = (eigen[i][j].getLambdaMoins())
+
+    lambda_plus_normalized=cv.normalize(lambda_plus_matrix, None, 0,40, norm_type=cv.NORM_MINMAX)
+    lambda_moins_normalized=cv.normalize(lambda_moins_matrix, None, 0,40, norm_type=cv.NORM_MINMAX)
+
+
+    for i in range(0,img_ellipse.shape[0],step) :
+        for j in range(0,img_ellipse.shape[1],step) :
+
+            lambda_plus = np.around(lambda_plus_normalized[i][j]).astype(int)
+            lambda_moins = np.around(lambda_moins_normalized[i][j]).astype(int)
+            theta_plus = eigen[i][j].getThetaPlus()
+            theta_moins = eigen[i][j].getThetaMoins()
+
+            axeLength = (lambda_plus,lambda_moins)
+            # print(axeLength)
+            center=(j,i)
+
+            angle = getAngle((0, 1), (0, 0), theta_moins)
+            print(theta_moins)
+            print(angle)
+            cv.ellipse(img_ellipse,center,axeLength,angle,0,360,(255,0,0),-1)
+
+    cv.imwrite('./output/tensors/img_ellipse_G.jpg', img_ellipse)
+
+
+def draw_ellipses_T(img, eigen):
+
+    #Discretiser l'image et tracer des ellipses
+    step=20
+    img_ellipse_T=img.copy()
+    print(img.shape)
+    lambda_plus_matrix = np.zeros(eigen.shape)
+    lambda_moins_matrix = np.zeros(eigen.shape)
+    for i in range(eigen.shape[0]):
+        for j in range(eigen.shape[1]):
+            lambda_plus_matrix[i][j] = eigen[i][j].getCPlus()
+            lambda_moins_matrix[i][j] = (eigen[i][j].getCMoins())
+
+    lambda_plus_normalized=cv.normalize(lambda_plus_matrix, None, 0,20, norm_type=cv.NORM_MINMAX)
+    lambda_moins_normalized=cv.normalize(lambda_moins_matrix, None, 0,20, norm_type=cv.NORM_MINMAX)
+
+
+    for i in range(0,img_ellipse_T.shape[0],step) :
+        for j in range(0,img_ellipse_T.shape[1],step) :
+
+            lambda_plus = np.around(lambda_plus_normalized[i][j]).astype(int)
+            lambda_moins = np.around(lambda_moins_normalized[i][j]).astype(int)
+            theta_plus = eigen[i][j].getThetaPlus()
+            theta_moins = eigen[i][j].getThetaMoins()
+
+            axeLength = (lambda_plus,lambda_moins)
+            # print(axeLength)
+            center=(j,i)
+
+            angle = getAngle((0, 1), (0, 0), theta_moins)
+            print(theta_moins)
+            print(angle)
+            cv.ellipse(img_ellipse_T,center,axeLength,angle,0,360,(255,0,0),-1)
+
+    cv.imwrite('./output/tensors/img_ellipse_T.jpg', img_ellipse_T)
