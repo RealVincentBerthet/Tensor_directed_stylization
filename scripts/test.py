@@ -1,9 +1,9 @@
-import numpy as np
+import math
 
 
+def getAngle(a, b, c):
+    ang = math.degrees(math.atan2(c[1] - b[1], c[0] - b[0]) - math.atan2(a[1] - b[1], a[0] - b[0]))
+    return ang + 360 if ang < 0 else ang
 
-vect = np.array([1,2])
 
-angle = np.rad2deg(np.arccos(np.clip(np.dot(np.array([0,1]), vect / np.linalg.norm(vect)), -1.0, 1.0)))
-
-print(angle)
+print(getAngle((5, 0), (0, 0), (-5, -1)))

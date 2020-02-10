@@ -60,15 +60,15 @@ def main():
     start_time = time.time()
     sigma1 = 0.5
     sigma2 = 1.2
-    p1=2 #p1>=p2>=0
-    p2=1 
-    img = cv.imread('./sources/img_test.png',cv.IMREAD_COLOR) #bgr
-    # img = cv.imread('./sources/lena.png', cv.IMREAD_COLOR)  # bgr
+    p1=1.2 #p1>=p2>=0
+    p2=0.5
+    # img = cv.imread('./sources/img_test.png',cv.IMREAD_COLOR) #bgr
+    # img = cv.imread('./sources/joconde.png', cv.IMREAD_COLOR)  # bgr
+    img = cv.imread('./sources/lena.png', cv.IMREAD_COLOR)  # bgr
 
     # Algo
     A,B,C=initialization(img,sigma1,sigma2)
     G,T=computeTensors(A,B,C,p1,p2) # T (tensor de trait), G (tensor de structure)
-
     tools.draw_ellipses(img, G)
 
     print('time : '+str(round(time.time() - start_time))+' seconds')

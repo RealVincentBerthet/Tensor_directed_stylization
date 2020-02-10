@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 import numpy as np
+import math
 
 
 class Tensor:
@@ -46,22 +47,31 @@ class Eigen:
             [self.getThetaMoins()])
         return Tensor(T)
 
+def getAngle(a, b, c):
+    ang = math.degrees(math.atan2(c[1] - b[1], c[0] - b[0]) - math.atan2(a[1] - b[1], a[0] - b[0]))
+    return ang + 360 if ang < 0 else ang
+
+
 def draw_ellipses(img, eigen):
 
     #Discretiser l'image et tracer des ellipses
-    step=20
+    step=10
     img_ellipse=img
-
+    print(img.shape)
     lambda_plus_matrix = np.zeros(eigen.shape)
     lambda_moins_matrix = np.zeros(eigen.shape)
     for i in range(eigen.shape[0]):
         for j in range(eigen.shape[1]):
             lambda_plus_matrix[i][j] = eigen[i][j].getLambdaPlus()
-            lambda_moins_matrix[i][j] = eigen[i][j].getLambdaMoins()
+            lambda_moins_matrix[i][j] = abs(eigen[i][j].getLambdaMoins())
+            # lambda_plus_matrix[i][j] = eigen[i][j].getCPlus()
+            # lambda_moins_matrix[i][j] = (eigen[i][j].getCMoins())
 
     lambda_plus_normalized=cv.normalize(lambda_plus_matrix, None, 0,10, norm_type=cv.NORM_MINMAX)
     lambda_moins_normalized=cv.normalize(lambda_moins_matrix, None, 0,10, norm_type=cv.NORM_MINMAX)
-
+    # lambda_plus_normalized=10*lambda_plus_matrix/np.amax(lambda_plus_matrix)
+    # lambda_moins_normalized = 10*lambda_moins_matrix / np.amax(lambda_plus_matrix)
+    # print(np.amax(lambda_moins_matrix))
 
     for i in range(0,img_ellipse.shape[0],step) :
         for j in range(0,img_ellipse.shape[1],step) :
@@ -71,13 +81,13 @@ def draw_ellipses(img, eigen):
             theta_plus = eigen[i][j].getThetaPlus()
             theta_moins = eigen[i][j].getThetaMoins()
 
-            axeLength = (lambda_moins,lambda_plus)
-            print(axeLength)
+            axeLength = (lambda_plus,lambda_moins)
+            # print(axeLength)
             center=(j,i)
 
-            vect = theta_moins
-            angle = np.rad2deg(np.arccos(np.clip(np.dot(np.array([0, 1]), vect / np.linalg.norm(vect)), -1.0, 1.0)))
-            # print(theta_moins)
+            angle = getAngle((0, 1), (0, 0), theta_moins)
+            print(theta_moins)
+            print(angle)
             cv.ellipse(img_ellipse,center,axeLength,angle,0,360,(255,0,0),-1)
 
     cv.imwrite('./output/tensors/img_ellipse.jpg', img_ellipse)
