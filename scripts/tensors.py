@@ -6,6 +6,7 @@ import math
 import tensorsTools
 from tensorsTools import Tensor
 from tensorsTools import VectorField
+from tensorsTools import Bar
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -49,10 +50,17 @@ def computeEigen(img_sobel_x_lab,img_sobel_y_lab,sigma):
 
     return A,B,C
 
-def computeTensors(A,B,C,p1,p2):
-    print("computeTensors start")
-    T =np.zeros(A.shape,Tensor)
 
+# def progressBar(title,max):
+#     bar = progressbar.ProgressBar(maxval=max, \
+#     widgets=[str(title),progressbar.Bar(), ' ', progressbar.Percentage(),' [',progressbar.Counter(),'/',str(max),'] - ',progressbar.Timer()])
+#     bar.start()
+
+#     return bar
+
+def computeTensors(A,B,C,p1,p2):
+    bar=tensorsTools.Bar("Compute Tensors",A.shape[0]*A.shape[1])
+    T =np.zeros(A.shape,Tensor)
     for i in range(A.shape[0]) :
         for j in range (A.shape[1]) :
             # create symetric matrix 2x2 [[A,C][C,B]]
@@ -63,16 +71,14 @@ def computeTensors(A,B,C,p1,p2):
             tmp[1,1]=B[i,j]
             # extract eigenValues and eigenVectors to compute tensor
             T[i,j]=Tensor(cv.eigen(tmp),p1,p2)
-
-    print("computeTensors done")
+            bar.next()
     return T
 
 def computeVectorField(T):
-    print("computeVectorField start")
-
     # phi=np.array([0,math.pi/4,math.pi/2,3*math.pi/4])
     phi = np.array([0, math.pi / 2])
     w = []
+    bar=tensorsTools.Bar("Compute VectorField",T.shape[0]*T.shape[1]*len(phi))
     for i in range(len(phi)):
         w.append(np.zeros(T.shape, VectorField))
     w = np.array(w)
@@ -81,8 +87,8 @@ def computeVectorField(T):
         for j in range (T.shape[1]) :
             for p in range(len(phi)) :
                 w[p,i,j]=VectorField(T[i,j],phi[p])
+                bar.next()
 
-    print("computeVectorField done")           
     return w
 
 def main():

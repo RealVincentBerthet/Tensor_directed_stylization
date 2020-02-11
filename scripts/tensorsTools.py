@@ -3,6 +3,8 @@ import cv2 as cv
 import numpy as np
 import math
 import scipy.linalg
+import progressbar
+
 
 class VectorField:
     def __init__(self,T,phy):
@@ -53,6 +55,22 @@ class Tensor:
     
     def sqrt(self):
         return scipy.linalg.sqrtm(self.tensor)
+
+class Bar:
+    def __init__(self, title,size):
+        self.size=size
+        self.increment=0
+        self.bar = progressbar.ProgressBar(maxval=self.size, \
+        widgets=[str(title),' ', progressbar.Bar(), ' ', progressbar.Percentage(),' [',progressbar.Counter(),'/',str(size),'] - ',progressbar.Timer()])
+        self.bar.start()
+    
+    def next(self):
+        self.increment=self.increment+1
+        if self.increment>=self.size:
+            self.bar.finish()
+        else:
+            self.bar.update(self.increment)
+
 
 def getAngle(a, b, c):
     ang = math.degrees(math.atan2(c[1] - b[1], c[0] - b[0]) - math.atan2(a[1] - b[1], a[0] - b[0]))
@@ -117,10 +135,9 @@ def draw_ellipses_T(img, T):
     cv.imwrite('./output/tensors/img_ellipse_T.jpg', img_ellipse_T)
 
 def draw_strokes(img, w,T,n,epsilon,L):
-    print("draw_strokes start")
     img_strokes = np.zeros((w.shape[1],w.shape[2],3), np.uint8)
     img_strokes[:,:,:] = 255
-
+    bar=Bar("Draw strokes",n*w.shape[0])
     for counter in range(n):
         x=np.random.randint(0,img_strokes.shape[0])
         y=np.random.randint(0,img_strokes.shape[1])
@@ -135,13 +152,10 @@ def draw_strokes(img, w,T,n,epsilon,L):
                 r = int((255-img[x,y][2])/coeff)
                 cv.line(tmp, (y - int(uv[0]), x - int(uv[1])), (y + int(uv[0]), x + int(uv[1])), (b, g, r) , 1)
                 img_strokes[:,:,:] = cv.subtract(img_strokes[:,:,:], tmp[:,:,:])
+                bar.next()
         else :
             counter=counter-1
-
-        if round(((counter-1)/n)*100) != round((counter/n)*100) :
-            print(str(round((counter/n)*100))+' %')
     
-    cv.imwrite('./output/tensors/img_results.jpg', img_strokes)
-    print("draw_strokes done")    
+    cv.imwrite('./output/tensors/img_results.jpg', img_strokes)   
 
 
