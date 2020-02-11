@@ -4,12 +4,12 @@ import numpy as np
 import math
 import scipy.linalg
 import progressbar
-
+import os
 
 class VectorField:
-    def __init__(self,T,phy):
-        self.aphy=np.array([math.cos(phy),math.sin(phy)])
-        self.vector=T.sqrt()@self.aphy
+    def __init__(self,T,gamma):
+        self.agamma=np.array([math.cos(gamma),math.sin(gamma)])
+        self.vector=T.sqrt()@self.agamma
 
     def getX(self):
         return self.vector[0]
@@ -71,15 +71,15 @@ class Bar:
         else:
             self.bar.update(self.increment)
 
-
 def getAngle(a, b, c):
     ang = math.degrees(math.atan2(c[1] - b[1], c[0] - b[0]) - math.atan2(a[1] - b[1], a[0] - b[0]))
     return ang + 360 if ang < 0 else ang
 
-def draw_ellipses_G(img, T):
+def draw_ellipses_G(img, T,alpha=0.5,output=""):
     #Discrete image and draw elipse for structure tensor
     step=20
     img_ellipse=img.copy()
+    overlay = img.copy()
     lambda_plus_matrix = np.zeros(T.shape)
     lambda_moins_matrix = np.zeros(T.shape)
     for i in range(T.shape[0]):
@@ -101,14 +101,30 @@ def draw_ellipses_G(img, T):
             center=(j,i)
 
             angle = getAngle((0, 1), (0, 0), theta_moins)
-            cv.ellipse(img_ellipse,center,axeLength,angle,0,360,(255,0,0),-1)
+            color=(255,0,0)
 
-    cv.imwrite('./output/tensors/img_ellipse_G.jpg', img_ellipse)
+            # if (angle > 0 and angle <= 45.0) or (angle > 180 and angle <= 225) :
+            #     color=(255,0,0)
+            # elif (angle >45 and angle <= 90.0) or (angle > 225 and angle <= 270) :
+            #     color=(0,255,0)
+            # elif (angle >90 and angle <= 135) or (angle>270 and angle <= 315) :
+            #     color=(0,0,255)
+            # elif (angle > 135 and angle <=180) or angle>315 :
+            #     color=(0,255,255)
+            
+            cv.ellipse(overlay,center,axeLength,angle,0,360,color,-1)
 
-def draw_ellipses_T(img, T):
+    img_ellipse = cv.addWeighted(overlay, alpha, img_ellipse, 1 - alpha, 0)
+
+    if not os.path.exists('./output/tensors/'+os.path.dirname(output)):
+        os.makedirs('./output/tensors/'+os.path.dirname(output))
+    cv.imwrite('./output/tensors/'+str(output)+'img_ellipse_G.jpg', img_ellipse)
+
+def draw_ellipses_T(img, T,alpha=0.5,output=""):
     #Discrete image and draw ellipse for stroke tensor
     step=20
-    img_ellipse_T=img.copy()
+    img_ellipse=img.copy()
+    overlay = img.copy()
     c_plus_matrix = np.zeros(T.shape)
     c_moins_matrix = np.zeros(T.shape)
     for i in range(T.shape[0]):
@@ -119,8 +135,8 @@ def draw_ellipses_T(img, T):
     c_plus_normalized=cv.normalize(c_plus_matrix, None, 0,20, norm_type=cv.NORM_MINMAX)
     c_moins_normalized=cv.normalize(c_moins_matrix, None, 0,20, norm_type=cv.NORM_MINMAX)
 
-    for i in range(0,img_ellipse_T.shape[0],step) :
-        for j in range(0,img_ellipse_T.shape[1],step) :
+    for i in range(0,img_ellipse.shape[0],step) :
+        for j in range(0,img_ellipse.shape[1],step) :
             c_plus = np.around(c_plus_normalized[i][j]).astype(int)
             c_moins = np.around(c_moins_normalized[i][j]).astype(int)
             theta_plus = T[i][j].getThetaPlus()
@@ -130,14 +146,17 @@ def draw_ellipses_T(img, T):
             center=(j,i)
 
             angle = getAngle((0, 1), (0, 0), theta_moins)
-            cv.ellipse(img_ellipse_T,center,axeLength,angle,0,360,(255,0,0),-1)
+            cv.ellipse(overlay,center,axeLength,angle,0,360,(255,0,0),-1)
 
-    cv.imwrite('./output/tensors/img_ellipse_T.jpg', img_ellipse_T)
+    img_ellipse = cv.addWeighted(overlay, alpha, img_ellipse, 1 - alpha, 0)
+    if not os.path.exists('./output/tensors/'+os.path.dirname(output)):
+        os.makedirs('./output/tensors/'+os.path.dirname(output))
+    cv.imwrite('./output/tensors/'+str(output)+'img_ellipse_T.jpg', img_ellipse)
 
-def draw_strokes(img, w,T,n,epsilon,L):
+def draw_strokes(img, w,T,n,epsilon,L,output=""):
     img_strokes = np.zeros((w.shape[1],w.shape[2],3), np.uint8)
     img_strokes[:,:,:] = 255
-    bar=Bar("Draw strokes",n*w.shape[0])
+    bar=Bar("Draw strokes",n)
     for counter in range(n):
         x=np.random.randint(0,img_strokes.shape[0])
         y=np.random.randint(0,img_strokes.shape[1])
@@ -152,10 +171,11 @@ def draw_strokes(img, w,T,n,epsilon,L):
                 r = int((255-img[x,y][2])/coeff)
                 cv.line(tmp, (y - int(uv[0]), x - int(uv[1])), (y + int(uv[0]), x + int(uv[1])), (b, g, r) , 1)
                 img_strokes[:,:,:] = cv.subtract(img_strokes[:,:,:], tmp[:,:,:])
-                bar.next()
+            bar.next()
         else :
             counter=counter-1
-    
-    cv.imwrite('./output/tensors/img_results.jpg', img_strokes)   
+    if not os.path.exists('./output/tensors/'+os.path.dirname(output)):
+        os.makedirs('./output/tensors/'+os.path.dirname(output))
+    cv.imwrite('./output/tensors/'+str(output)+'img_results.jpg', img_strokes)   
 
 

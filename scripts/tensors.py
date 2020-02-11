@@ -8,9 +8,18 @@ from tensorsTools import Tensor
 from tensorsTools import VectorField
 from tensorsTools import Bar
 
-def get_args():
+def get_args(sigma1,sigma2,p1,p2,n,epsilon,L,coeff,output):
     parser = argparse.ArgumentParser()
     parser.add_argument("-i","--image", help="intput image")
+    parser.add_argument("-s1","--sigma1", help="sigma 1")
+    parser.add_argument("-s2","--sigma2", help="sigma 2")
+    parser.add_argument("-p1","--power1", help="power 1")
+    parser.add_argument("-p2","--power2", help="power 2")
+    parser.add_argument("-n","--number", help="number of strokes")
+    parser.add_argument("-e","--epsilon", help="epsilon to draw strokes")
+    parser.add_argument("-l","--length", help="Length of strokes")
+    parser.add_argument("-c","--coefficient", help="coefficient to reduce the image")
+    parser.add_argument("-o","--output", help="output in tensors directory")
     args = parser.parse_args()
 
     if args.image != None:
@@ -19,7 +28,26 @@ def get_args():
         print("No image loaded used -i argurment")
         quit()
 
-    return args.image
+    if args.sigma1 != None :
+        sigma1=float(args.sigma1)
+    if args.sigma2 != None :
+        sigma2=float(args.sigma2)
+    if args.power1 != None :
+        p1=float(args.power1)
+    if args.power2 != None :
+        p2=float(args.power2)
+    if args.number != None :
+        n=int(args.number)
+    if args.epsilon != None :
+        epsilon=float(args.epsilon)
+    if args.length != None :
+        L=float(args.length)
+    if args.coefficient != None :
+        coeff=float(args.coefficient)
+    if args.output != None :
+        output=str(args.output)
+
+    return args.image,sigma1,sigma2,p1,p2,n,epsilon,L,coeff,output
     
 def initialization(img,sigma):
     img = cv.GaussianBlur(img,(15,15),sigma)
@@ -50,14 +78,6 @@ def computeEigen(img_sobel_x_lab,img_sobel_y_lab,sigma):
 
     return A,B,C
 
-
-# def progressBar(title,max):
-#     bar = progressbar.ProgressBar(maxval=max, \
-#     widgets=[str(title),progressbar.Bar(), ' ', progressbar.Percentage(),' [',progressbar.Counter(),'/',str(max),'] - ',progressbar.Timer()])
-#     bar.start()
-
-#     return bar
-
 def computeTensors(A,B,C,p1,p2):
     bar=tensorsTools.Bar("Compute Tensors",A.shape[0]*A.shape[1])
     T =np.zeros(A.shape,Tensor)
@@ -75,18 +95,18 @@ def computeTensors(A,B,C,p1,p2):
     return T
 
 def computeVectorField(T):
-    # phi=np.array([0,math.pi/4,math.pi/2,3*math.pi/4])
-    phi = np.array([0, math.pi / 2])
+    # gamma=np.array([0,math.pi/4,math.pi/2,3*math.pi/4])
+    gamma = np.array([0, math.pi / 2])
     w = []
-    bar=tensorsTools.Bar("Compute VectorField",T.shape[0]*T.shape[1]*len(phi))
-    for i in range(len(phi)):
+    bar=tensorsTools.Bar("Compute VectorField",T.shape[0]*T.shape[1]*len(gamma))
+    for i in range(len(gamma)):
         w.append(np.zeros(T.shape, VectorField))
     w = np.array(w)
 
     for i in range(T.shape[0]) :
         for j in range (T.shape[1]) :
-            for p in range(len(phi)) :
-                w[p,i,j]=VectorField(T[i,j],phi[p])
+            for p in range(len(gamma)) :
+                w[p,i,j]=VectorField(T[i,j],gamma[p])
                 bar.next()
 
     return w
@@ -101,9 +121,11 @@ def main():
     n=100000
     epsilon=1
     L=80
-    img_path=get_args()
+    coeff=1
+    output=""
+    # Initialize input image
+    img_path,sigma1,sigma2,p1,p2,n,epsilon,L,coeff,output=get_args(sigma1,sigma2,p1,p2,n,epsilon,L,coeff,output)
     img = cv.imread(str(img_path),cv.IMREAD_COLOR) #bgr
-    coeff = 2
     size = (int(img.shape[1]/coeff), int(img.shape[0]/coeff))
     img = cv.resize(img, size)
 
@@ -111,10 +133,10 @@ def main():
     img_sobel_x_lab,img_sobel_y_lab=initialization(img,sigma1)
     A,B,C=computeEigen(img_sobel_x_lab,img_sobel_y_lab,sigma2)
     T=computeTensors(A,B,C,p1,p2) 
-    tensorsTools.draw_ellipses_G(img, T) #structure
-    tensorsTools.draw_ellipses_T(img, T) #trait
+    tensorsTools.draw_ellipses_G(img, T,output=output) #structure
+    tensorsTools.draw_ellipses_T(img, T,output=output) #trait
     w=computeVectorField(T)
-    tensorsTools.draw_strokes(img, w,T,n,epsilon,L)
+    tensorsTools.draw_strokes(img, w,T,n,epsilon,L,output=output)
     print('time : '+str(round(time.time() - start_time))+' seconds')
 
 if __name__ == '__main__':
