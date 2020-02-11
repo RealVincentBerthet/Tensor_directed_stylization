@@ -171,9 +171,10 @@ def draw_strokes(img, w,T,n,epsilon,L,output=""):
                 r = int((255-img[x,y][2])/coeff)
                 cv.line(tmp, (y - int(uv[0]), x - int(uv[1])), (y + int(uv[0]), x + int(uv[1])), (b, g, r) , 1)
                 img_strokes[:,:,:] = cv.subtract(img_strokes[:,:,:], tmp[:,:,:])
-            bar.next()
         else :
             counter=counter-1
+        
+        bar.next()
     if not os.path.exists('./output/tensors/'+os.path.dirname(output)):
         os.makedirs('./output/tensors/'+os.path.dirname(output))
     cv.imwrite('./output/tensors/'+str(output)+'img_results.jpg', img_strokes)   
