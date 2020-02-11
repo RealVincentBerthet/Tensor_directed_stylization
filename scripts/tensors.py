@@ -1,27 +1,27 @@
 import cv2 as cv
 import numpy as np
+import argparse
 import time
 import math
-import tools
-from tools import Eigen
-from tools import Tensor
-from tools import VectorField
+import tensorsTools
+from tensorsTools import Tensor
+from tensorsTools import VectorField
 
-def initialization(img,sigma1, sigma2):
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i","--image", help="intput image")
+    args = parser.parse_args()
 
-    img = cv.GaussianBlur(img,(15,15),sigma1)
+    if args.image != None:
+        print("Image Loaded : "+str(args.image))
+    else:
+        print("No image loaded used -i argurment")
+        quit()
 
-    # # Estimate the smoothed structure tensor field
-    # # sobel x
-    # img_sobel_x=cv.Sobel(img,cv.CV_64F,1,0,ksize=1)
-    # cv.imwrite('./output/tensors/img_sobel_x.jpg', img_sobel_x)
-    # # sobel y
-    # img_sobel_y=cv.Sobel(img,cv.CV_64F,0,1,ksize=1)
-    # cv.imwrite('./output/tensors/img_sobel_y.jpg', img_sobel_y)
-    # # BGR->LAB conversion
-    # img_sobel_x_lab = cv.cvtColor(np.uint8(img_sobel_x), cv.COLOR_BGR2LAB)
-    # img_sobel_y_lab = cv.cvtColor(np.uint8(img_sobel_y), cv.COLOR_BGR2LAB)
-
+    return args.image
+    
+def initialization(img,sigma):
+    img = cv.GaussianBlur(img,(15,15),sigma)
     img_lab = cv.cvtColor(np.uint8(img), cv.COLOR_BGR2LAB)
     # Estimate the smoothed structure tensor field
     # sobel x
@@ -30,18 +30,18 @@ def initialization(img,sigma1, sigma2):
     # sobel y
     img_sobel_y_lab = cv.Sobel(img_lab, cv.CV_64F, 0, 1, ksize=1)
     cv.imwrite('./output/tensors/img_sobel_y.jpg', img_sobel_y_lab)
-    # BGR->LAB conversion
+ 
+    return img_sobel_x_lab,img_sobel_y_lab
 
-
+def computeEigen(img_sobel_x_lab,img_sobel_y_lab,sigma):
     # compute eigens 
     A=img_sobel_x_lab[:,:,0]*img_sobel_x_lab[:,:,0]+img_sobel_x_lab[:,:,1]*img_sobel_x_lab[:,:,1]+img_sobel_x_lab[:,:,2]*img_sobel_x_lab[:,:,2]
     B=img_sobel_y_lab[:,:,0]*img_sobel_y_lab[:,:,0]+img_sobel_y_lab[:,:,1]*img_sobel_y_lab[:,:,1]+img_sobel_y_lab[:,:,2]*img_sobel_y_lab[:,:,2]
     C=img_sobel_x_lab[:,:,0]*img_sobel_y_lab[:,:,0]+img_sobel_x_lab[:,:,1]*img_sobel_y_lab[:,:,1]+img_sobel_x_lab[:,:,2]*img_sobel_y_lab[:,:,2]
     # blur
-    A=cv.GaussianBlur(A,(15,15),sigma2)
-    B=cv.GaussianBlur(B,(15,15),sigma2)
-    C=cv.GaussianBlur(C,(15,15),sigma2)
-
+    A=cv.GaussianBlur(A,(15,15),sigma)
+    B=cv.GaussianBlur(B,(15,15),sigma)
+    C=cv.GaussianBlur(C,(15,15),sigma)
     # Convert A,B,C CV_64FC1
     A=np.float64(A)
     B=np.float64(B)
@@ -51,7 +51,6 @@ def initialization(img,sigma1, sigma2):
 
 def computeTensors(A,B,C,p1,p2):
     print("computeTensors start")
-    eigen =np.zeros(A.shape,Eigen)
     T =np.zeros(A.shape,Tensor)
 
     for i in range(A.shape[0]) :
@@ -62,12 +61,11 @@ def computeTensors(A,B,C,p1,p2):
             tmp[0,1]=C[i,j]
             tmp[1,0]=C[i,j]
             tmp[1,1]=B[i,j]
-
             # extract eigenValues and eigenVectors to compute tensor
-            eigen[i,j]=Eigen(cv.eigen(tmp),p1,p2)
-            T[i,j]=eigen[i,j].computeTensor()
+            T[i,j]=Tensor(cv.eigen(tmp),p1,p2)
+
     print("computeTensors done")
-    return eigen,T
+    return T
 
 def computeVectorField(T):
     print("computeVectorField start")
@@ -97,23 +95,20 @@ def main():
     n=100000
     epsilon=1
     L=80
-    # img = cv.imread('./sources/img_test.png',cv.IMREAD_COLOR) #bgr
-    # img = cv.imread('./sources/joconde.png', cv.IMREAD_COLOR)  # bgr
-    # img = cv.imread('./sources/lena.png', cv.IMREAD_COLOR)  # bgr
-    # img = cv.imread('./sources/montagne.jpg', cv.IMREAD_COLOR)
-    # img = cv.imread('./sources/pyramide.jpeg', cv.IMREAD_COLOR)
-    img = cv.imread('./sources/obama.jpg', cv.IMREAD_COLOR)
+    img_path=get_args()
+    img = cv.imread(str(img_path),cv.IMREAD_COLOR) #bgr
     coeff = 2
     size = (int(img.shape[1]/coeff), int(img.shape[0]/coeff))
     img = cv.resize(img, size)
 
     # Algo
-    A,B,C=initialization(img,sigma1,sigma2)
-    G,T=computeTensors(A,B,C,p1,p2) # T (tensor de trait), G (tensor de structure)
-    tools.draw_ellipses_G(img, G)
-    tools.draw_ellipses_T(img, T)
+    img_sobel_x_lab,img_sobel_y_lab=initialization(img,sigma1)
+    A,B,C=computeEigen(img_sobel_x_lab,img_sobel_y_lab,sigma2)
+    T=computeTensors(A,B,C,p1,p2) 
+    tensorsTools.draw_ellipses_G(img, T) #structure
+    tensorsTools.draw_ellipses_T(img, T) #trait
     w=computeVectorField(T)
-    tools.draw_strokes(img, w,G,n,epsilon,L)
+    tensorsTools.draw_strokes(img, w,T,n,epsilon,L)
     print('time : '+str(round(time.time() - start_time))+' seconds')
 
 if __name__ == '__main__':

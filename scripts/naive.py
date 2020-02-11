@@ -27,13 +27,13 @@ img_y = img_ycrcb[:,:,0]
 
 # Gaussian filter
 gaussian = cv.GaussianBlur(img_y,(5,5),sigma_gaussian)
-cv.imwrite('./output/img_gaussian.jpg', gaussian)
+cv.imwrite('./output/naive/img_gaussian.jpg', gaussian)
 
 # Gradient
 sobel = cv.Sobel(gaussian, cv.CV_64F, 1, 1, ksize=1)
 sobelx = cv.Sobel(gaussian, cv.CV_64F, 1, 0, ksize=1)
 sobely = cv.Sobel(gaussian, cv.CV_64F, 0, 1, ksize=1)
-cv.imwrite('./output/img_sobel.jpg', sobel)
+cv.imwrite('./output/naive/img_sobel.jpg', sobel)
 
 # Initialize img_greyscale image
 height, width = sobel.shape
@@ -58,7 +58,7 @@ else :
             cpt,img_greyscale=strokes(x,y,cpt,img_greyscale)
             print('strokes : '+str(cpt)+'/'+str(sobel.shape[0]*sobel.shape[1]))
 
-cv.imwrite('./output/img_grayscale.jpg', img_greyscale)
+cv.imwrite('./output/naive/img_grayscale.jpg', img_greyscale)
 
 
 # Colorisation
@@ -78,8 +78,8 @@ img_greyscale_rgba=cv.cvtColor(img_greyscale,cv.COLOR_RGB2RGBA)
 
 opacity = 0.7  # The opacity of the foreground that is blended onto the background
 img_blended = blend_modes.multiply(img_greyscale_rgba.astype(float),img_rgba.astype(float), opacity)
-cv.imwrite('./output/img_res_1.jpg', img_blended)
+cv.imwrite('./output/naive/img_res_1.jpg', img_blended)
 img_blended = blend_modes.multiply(img_rgba.astype(float),img_greyscale_rgba.astype(float), opacity)
-cv.imwrite('./output/img_res_2.jpg', img_blended)
+cv.imwrite('./output/naive/img_res_2.jpg', img_blended)
 print('time : '+str(round(time.time() - start_time))+' seconds')
 
