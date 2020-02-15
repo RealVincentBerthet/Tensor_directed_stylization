@@ -29,7 +29,7 @@ def strokes(x,y,cpt,result,img,epsilon,L) :
 def main():
     # Parameters
     start_time = time.time()
-    L = 4                     # length of a strokes
+    L = 10                     # length of a strokes
     sigma_gaussian = 10       # standard deviation >=0
     epsilon = 2               # level >=0
     random=1000000            # set random to -1 to cross all the image
@@ -37,19 +37,13 @@ def main():
     # Read image
     img_path=get_args()
     img = cv.imread(str(img_path),cv.IMREAD_COLOR)
-    #img = cv.imread('./sources/perso/guigui.jpg',cv.IMREAD_COLOR)
     img_ycrcb = cv.cvtColor(img, cv.COLOR_BGR2YCrCb)
     img_y = img_ycrcb[:,:,0]
 
     # Gaussian filter
     gaussian = cv.GaussianBlur(img_y,(5,5),sigma_gaussian)
-    cv.imwrite('./output/naive/img_gaussian.jpg', gaussian)
-
     # Gradient
     sobel = cv.Sobel(gaussian, cv.CV_64F, 1, 1, ksize=1)
-    sobelx = cv.Sobel(gaussian, cv.CV_64F, 1, 0, ksize=1)
-    sobely = cv.Sobel(gaussian, cv.CV_64F, 0, 1, ksize=1)
-    cv.imwrite('./output/naive/img_sobel.jpg', sobel)
 
     # Initialize img_greyscale image
     height, width = sobel.shape

@@ -5,6 +5,7 @@ import math
 import scipy.linalg
 import progressbar
 import os
+import time
 
 class VectorField:
     def __init__(self,T,gamma):
@@ -70,6 +71,43 @@ class Bar:
             self.bar.finish()
         else:
             self.bar.update(self.increment)
+
+class Timer:
+    def __init__(self):
+        self.time=time.time()
+    def start(self):
+        self.time=time.time()
+    def getTime(self):
+        return self.time
+    def setTime(self,time):
+        self.time=time
+    def __str__(self):
+        temp=round(time.time() - self.time)
+        hours = temp//3600
+        temp = temp - 3600*hours
+        minutes = temp//60
+        seconds = temp - 60*minutes
+
+        h=''
+        m=''
+        s=''
+        if hours > 0 and hours <10:
+            h='0'+str(hours)+'h'
+        elif hours>9:
+            h=str(hours)+'h'
+
+        if minutes > 0 and minutes <10 and hours>0:
+            m='0'+str(minutes)+'min'
+        elif minutes>9:
+            m=str(minutes)+'min'
+
+        if seconds > 0 and seconds <10 and minutes>0:
+            s='0'+str(seconds)+'s'
+        elif seconds>9:
+            s=str(seconds)+'s'
+        t=str(h)+str(m)+str(s)
+
+        return str(t)
 
 def getAngle(a, b, c):
     ang = math.degrees(math.atan2(c[1] - b[1], c[0] - b[0]) - math.atan2(a[1] - b[1], a[0] - b[0]))
