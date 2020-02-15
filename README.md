@@ -57,11 +57,11 @@ The previous environment contains the following packages :
 ### Naive approach
 | ![](./sources/desert.png) | ![](./output/naive/desert/img_res_3.jpg) | ![](./output/naive/desert/img_res_2.jpg) |
 |:-:|:-:|:-:|
-|Source| Gray| Mulitply|
+|Source| Gray| Multiply|
 
 | ![](./sources/lena.png) | ![](./output/naive/lena/img_res_3.jpg) | ![](./output/naive/lena/img_res_2.jpg) |
 |:-:|:-:|:-:|
-|Source| Gray| Mulitply and Gaussain blur|
+|Source| Gray| Multiply and Gaussain blur|
 
 
 
