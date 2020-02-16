@@ -191,24 +191,38 @@ def draw_ellipses_T(img, T,alpha=0.5,output=""):
         os.makedirs('./output/tensors/'+os.path.dirname(output))
     cv.imwrite('./output/tensors/'+str(output)+'img_ellipse_T.jpg', img_ellipse)
 
-def draw_strokes(img, w,T,n,epsilon,L,output=""):
-    img_strokes = np.zeros((w.shape[1],w.shape[2],3), np.uint8)
-    img_strokes[:,:,:] = 255
+def draw_strokes(img, w,T,n,epsilon,L,output="",gray=False):
     bar=Bar("Draw strokes",n)
+    src=img.copy()
+    if gray==True:
+        src=cv.cvtColor(src, cv.COLOR_BGR2GRAY)
+        img_strokes=np.zeros((w.shape[1],w.shape[2]), np.uint8)
+        img_strokes[:,:] = 255
+    else :
+        img_strokes = np.zeros((w.shape[1],w.shape[2],3), np.uint8)
+        img_strokes[:,:,:] = 255
+ 
     for counter in range(n):
         x=np.random.randint(0,img_strokes.shape[0])
         y=np.random.randint(0,img_strokes.shape[1])
 
         if math.sqrt(T[x,y].getLambdaPlus()+T[x,y].getLambdaMoins()) > epsilon :
             for p in range(w.shape[0]) : #nb phy
-                tmp = np.zeros((img_strokes.shape[0],img_strokes.shape[1],3), np.uint8)
+
                 uv=[L*w[p,x,y].getX(),L*w[p,x,y].getY()]
                 coeff = 25
-                b = int((255-img[x,y][0])/coeff)
-                g = int((255-img[x,y][1])/coeff)
-                r = int((255-img[x,y][2])/coeff)
-                cv.line(tmp, (y - int(uv[0]), x - int(uv[1])), (y + int(uv[0]), x + int(uv[1])), (b, g, r) , 1)
-                img_strokes[:,:,:] = cv.subtract(img_strokes[:,:,:], tmp[:,:,:])
+                if gray == True :
+                    tmp = np.zeros((img_strokes.shape[0],img_strokes.shape[1]), np.uint8)
+                    c = int((255-src[x,y])/coeff)
+                    cv.line(tmp, (y - int(uv[0]), x - int(uv[1])), (y + int(uv[0]), x + int(uv[1])), c, 1)
+                    img_strokes[:,:] = cv.subtract(img_strokes[:,:], tmp[:,:])
+                else:
+                    tmp = np.zeros((img_strokes.shape[0],img_strokes.shape[1],3), np.uint8)
+                    b = int((255-src[x,y][0])/coeff)
+                    g = int((255-src[x,y][1])/coeff)
+                    r = int((255-src[x,y][2])/coeff)
+                    cv.line(tmp, (y - int(uv[0]), x - int(uv[1])), (y + int(uv[0]), x + int(uv[1])), (b, g, r) , 1)
+                    img_strokes[:,:,:] = cv.subtract(img_strokes[:,:,:], tmp[:,:,:])
         else :
             counter=counter-1
         
